@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace CSVTranformation.Models
 {
-    internal class JsonExpected
+    internal class RootData
     {
-        
         public string ExternalUniqueId { get; set; }
         public string BusinessId { get; set; }
         public string SourceSystem { get; set; }
-        public string EventDateTime { get; set; }
-        public List<DataPOCO> Data { get; set; }
+        public DateTime EventDateTime { get; set; }
+        public List<DataPOCO> DataPOCO { get; set; }
+        
     }
 }

@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using CsvHelper;
 using System.Collections.Generic;
+using CSVTranformation.Models;
+using ChoETL;
+using System.Dynamic;
 
 namespace CSVTranformation
 {
@@ -24,58 +27,50 @@ namespace CSVTranformation
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            var data = JsonConvert.DeserializeObject(requestBody);
+            JsonExpected data = JsonConvert.DeserializeObject <JsonExpected>(requestBody);
             log.LogInformation(data.ToString());
 
-            //for(int i =0; i < data.Data.Count; i++) {
-            //    log.LogInformation(data.Data[i].ToString());
+            //foreach (DataPOCO i in data)
+            //{
+            //    log.LogInformation(i.);
             //}
 
-            SortedSet<string> headers = new();
-            List<string> values = new();
+            //SortedSet<string> headers = new();
+            //List<string> values = new();
 
-            JArray array = JArray.Parse(requestBody);
-            foreach (JObject obj in array.Children<JObject>()) { 
-                foreach(JProperty singleProp in obj.Properties())
-                {
-                    headers.Add(singleProp.Name);
-                    values.Add(singleProp.Value.ToString());
-                }
-            }
+            //JArray array = JArray.Parse(requestBody);
+            //foreach (JObject obj in array.Children<JObject>()) { 
+            //    foreach(JProperty singleProp in obj.Properties())
+            //    {
+            //        headers.Add(singleProp.Name);
+            //        values.Add(singleProp.Value.ToString());
+            //    }
+            //}
 
-            log.LogInformation("These are the headers: ");
-            foreach (string v in headers) {
-                log.LogInformation(v);
-            }
-            log.LogInformation("These are the values: ");
-            foreach (string v in values)
-            {
-                log.LogInformation(v);
-            }
+            //log.LogInformation("These are the headers: ");
+            //foreach (string v in headers) {
+            //    log.LogInformation(v);
+            //}
+            //log.LogInformation("These are the values: ");
+            //foreach (string v in values)
+            //{
+            //    log.LogInformation(v);
+            //}
 
 
             //using (var csv = File.OpenWrite("C:/Users/nenum/Desktop/Tests-files/test.csv"))
             //{
-            //    using (var writer = new ChoCSVWriter<List<object>>(csv))
+            //    using (var writer = new ChoCSVWriter<List<DataPOCO>>(csv).WithFirstLineHeader().UseNestedKeyFormat(false).Configure(c => c.ArrayValueSeparator = ';') )
             //    {
-            //        parser.Write(data.Data);
+            //        writer.Write(data);
             //    }
             //}
 
-            using(var writer = new StreamWriter("C:/Users/nenum/Desktop/Tests-files/test.csv"))
-            using(var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
+            using (var writer = new StreamWriter($"C:/Users/nenum/Desktop/Tests-files/{data.ExternalUniqueId}_{data.BusinessId}_{data.SourceSystem}_{new DateTime().Millisecond}.csv"))
+            using (var csv = new CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
             {
-                foreach (string h in headers)
-                {
-                    csv.WriteField(h);
-                }
-                csv.NextRecord();
-                foreach (string v in values)
-                {
-                    csv.WriteField(v);
-                }
-                writer.Flush();
-                
+                csv.WriteRecords(data.Data as IEnumerable<dynamic>);
+
             }
 
             return new OkObjectResult("I'm working for now");
